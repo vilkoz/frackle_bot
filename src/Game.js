@@ -1,19 +1,45 @@
 import React, { useReducer } from 'react';
+import PointCounter from './PointCounter';
 const _ = require('lodash');
 
 const initialState = {
 	isGameFinished: false,
 	isDiceThrowed: false,
 	isDiceRolling: false,
+	roundPoints: 0,
+	throwPoints: 0,
 	points: 0,
 	diceNumber: 6,
 	diceArray: undefined,
 	selectedDices: new Set(),
 }
 
+const getSelectedDicesArray = (selectedDicesIndices, diceArray) => {
+	const resArray = []
+	for (const index of selectedDicesIndices) {
+		resArray.push(diceArray[index])
+	}
+	return resArray
+}
+
 const reducer = (state, action) => {
 	switch (action.type) {
 	case 'roll_dice':
+		if (state.selectedDices.size !== 0 && state.throwPoints !== 0) {
+			const notSelectedCount = state.diceNumber - state.selectedDices.size
+			const diceNumber = notSelectedCount <= 0 ? 6 : notSelectedCount
+			return { ...state,
+				isDiceRolling: true,
+				isDiceThrowed: true,
+				diceNumber: diceNumber,
+				diceArray: _.range(diceNumber).map((num) => {
+					return Math.ceil(Math.random() * 6)
+				}),
+				roundPoints: state.roundPoints + state.throwPoints,
+				throwPoints: 0,
+				selectedDices: new Set(),
+			}
+		}
 		return { ...state,
 			isDiceRolling: true,
 			isDiceThrowed: true,
@@ -28,7 +54,10 @@ const reducer = (state, action) => {
 		} else {
 			selectedDices.add(action.index)
 		}
-		return { ...state, selectedDices }
+		return { ...state,
+			selectedDices,
+			throwPoints: PointCounter(getSelectedDicesArray(state.selectedDices, state.diceArray))
+		}
 	case 'stop_dice_roll':
 		return { ...state, isDiceRolling: false }
 	default:
@@ -58,11 +87,14 @@ const Game = () => {
 
 	return (
 		<div className='container'>
+			<div>Score: {state.points}</div>
+			<div>Round Score: {state.roundPoints}</div>
+			<div>Throw Score: {state.throwPoints}</div>
 			<button onClick={() => {
 				dispatch({ type: 'roll_dice' });
 				setTimeout(() => dispatch({ type: 'stop_dice_roll' }), 1000)
 			}}>Roll Dice</button>
-			{state.points > 0 && state.isDiceTrowed && <button>Finish Move</button>}
+			{state.roundPoints > 0 && state.isDiceThrowed && <button>Finish Round</button>}
 			<div className='diceTable'>
 				{state.isDiceThrowed ?
 					(
@@ -73,7 +105,6 @@ const Game = () => {
 							return <Cube
 								key={index}
 								number={number}
-								// isSelected={state.selectedDices.has(index)}
 								isDiceRolling={state.isDiceRolling}
 								onClick={() => dispatch({ type: 'select_dice', index: index })}
 							/>
@@ -104,4 +135,4 @@ const Game = () => {
 	)
 }
 
-export default Game;
+export default Game
