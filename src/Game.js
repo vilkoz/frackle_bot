@@ -6,6 +6,8 @@ const initialState = {
 	isGameFinished: false,
 	isDiceThrowed: false,
 	isDiceRolling: false,
+	isFrackle: false,
+	roundNumber: 0,
 	roundPoints: 0,
 	throwPoints: 0,
 	points: 0,
@@ -22,20 +24,92 @@ const getSelectedDicesArray = (selectedDicesIndices, diceArray) => {
 	return resArray
 }
 
+const gameOverFunction = (score) => {
+	alert(`Game over! Your score: ${score}`)
+}
+
 const reducer = (state, action) => {
 	switch (action.type) {
+	case 'finish_round':
+		if (state.roundNumber + 1 >= 10) {
+			gameOverFunction(state.points + state.roundPoints + state.throwPoints)
+		}
+		return { ...state,
+			isDiceRolling: false,
+			isDiceThrowed: false,
+			roundNumber: state.roundNumber + 1,
+			diceNumber: 6,
+			diceArray: [],
+			points: state.points + state.roundPoints + state.throwPoints,
+			roundPoints: 0,
+			throwPoints: 0,
+			selectedDices: new Set(),
+		}
 	case 'roll_dice':
+		if (state.isFrackle) {
+			if (state.roundNumber + 1 >= 10) {
+				gameOverFunction(state.points)
+			}
+			return { ...state,
+				isDiceRolling: true,
+				isDiceThrowed: true,
+				isFrackle: false,
+				roundNumber: state.roundNumber + 1,
+				diceNumber: 6,
+				diceArray: _.range(6).map((num) => {
+					return Math.ceil(Math.random() * 6)
+				}),
+				roundPoints: 0,
+				throwPoints: 0,
+				selectedDices: new Set(),
+			}
+		}
 		if (state.selectedDices.size !== 0 && state.throwPoints !== 0) {
 			const notSelectedCount = state.diceNumber - state.selectedDices.size
 			const diceNumber = notSelectedCount <= 0 ? 6 : notSelectedCount
+			const diceArray = _.range(diceNumber).map((num) => {
+					return Math.ceil(Math.random() * 6)
+				})
+			if (PointCounter(diceArray, true) === 0) {
+				if (state.roundNumber + 1 >= 10) {
+					gameOverFunction(state.points)
+				}
+				return { ...state,
+					isDiceRolling: true,
+					isDiceThrowed: true,
+					isFrackle: true,
+					roundNumber: state.roundNumber + 1,
+					diceNumber: 6,
+					diceArray,
+					roundPoints: 0,
+					throwPoints: 0,
+					selectedDices: new Set(),
+				}
+			}
 			return { ...state,
 				isDiceRolling: true,
 				isDiceThrowed: true,
 				diceNumber: diceNumber,
-				diceArray: _.range(diceNumber).map((num) => {
-					return Math.ceil(Math.random() * 6)
-				}),
+				diceArray,
 				roundPoints: state.roundPoints + state.throwPoints,
+				throwPoints: 0,
+				selectedDices: new Set(),
+			}
+		}
+		const diceArray = _.range(state.diceNumber).map((num) => {
+				return Math.ceil(Math.random() * 6)
+			})
+		if (PointCounter(diceArray, true) === 0) {
+			if (state.roundNumber + 1 >= 10) {
+				gameOverFunction(state.points)
+			}
+			return { ...state,
+				isDiceRolling: true,
+				isDiceThrowed: true,
+				isFrackle: true,
+				roundNumber: state.roundNumber + 1,
+				diceArray,
+				roundPoints: 0,
 				throwPoints: 0,
 				selectedDices: new Set(),
 			}
@@ -43,9 +117,7 @@ const reducer = (state, action) => {
 		return { ...state,
 			isDiceRolling: true,
 			isDiceThrowed: true,
-			diceArray: _.range(state.diceNumber).map((num) => {
-				return Math.ceil(Math.random() * 6)
-			})
+			diceArray,
 		}
 	case 'select_dice':
 		const selectedDices = state.selectedDices
@@ -90,12 +162,22 @@ const Game = () => {
 			<div>Score: {state.points}</div>
 			<div>Round Score: {state.roundPoints}</div>
 			<div>Throw Score: {state.throwPoints}</div>
-			<button onClick={() => {
-				dispatch({ type: 'roll_dice' });
-				setTimeout(() => dispatch({ type: 'stop_dice_roll' }), 1000)
-			}}>Roll Dice</button>
-			{state.roundPoints > 0 && state.isDiceThrowed && <button>Finish Round</button>}
+			<div>Round number: {state.roundNumber}</div>
+			{(!state.isDiceThrowed || state.throwPoints !== 0 || state.isFrackle) &&
+				<button onClick={() => {
+					dispatch({ type: 'roll_dice' });
+					setTimeout(() => dispatch({ type: 'stop_dice_roll' }), 1000)
+				}}>Roll Dice</button>
+			}
+			{(state.roundPoints + state.throwPoints) > 0 && state.isDiceThrowed && !state.isFrackle &&
+				<button onClick={() => {
+					dispatch({ type: 'finish_round' });
+				}}>Finish Round</button>
+			}
 			<div className='diceTable'>
+				{state.isFrackle &&
+					<h1>FRAKLE!</h1>
+				}
 				{state.isDiceThrowed ?
 					(
 						state.diceArray.map((number, index) => {
