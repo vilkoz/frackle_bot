@@ -58,6 +58,8 @@ server.get('/highscore/:score', (req, res, next) => {
     }
   }
   bot.setGameScore(query.from.id, parseInt(req.params.score), options, (err, result) => {})
+  res.setHeader('Content-Type', 'application/json')
+  res.send({ data: 'OK!' })
 })
 
 server.listen(port)
