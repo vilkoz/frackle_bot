@@ -49,10 +49,12 @@ server.get('/highscore/:score', (req, res, next) => {
     options = {
       chat_id: query.message.chat.id,
       message_id: query.message.message_id,
+      force: true,
     }
   } else {
     options = {
       inline_message_id: query.inline_message_id,
+      force: true,
     }
   }
   bot.setGameScore(query.from.id, parseInt(req.params.score), options, (err, result) => {})
