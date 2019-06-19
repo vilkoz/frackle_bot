@@ -37,7 +37,7 @@ bot.on('inline_query', (iq) => {
 
 server.use(express.static(path.join(__dirname, 'build')))
 
-server.get('highscore/:score', (req, res, next) => {
+server.get('/highscore/:score', (req, res, next) => {
   if (!Object.hasOwnProperty.call(queries, req.query.id)) {
     return next();
   }
