@@ -21,3 +21,15 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+*~
+*.swp
+*.swo
+log
+tmp
+node_modules
+.nyc_output
+coverage
+build
+
+package-lock.json
