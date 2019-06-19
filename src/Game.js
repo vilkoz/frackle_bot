@@ -27,7 +27,7 @@ const getSelectedDicesArray = (selectedDicesIndices, diceArray) => {
 const gameOverFunction = (score) => {
   alert(`Game over! Your score: ${score}`)
   const url = new URL(location.href)
-  const playerId = url.selearchParams.get('id')
+  const playerId = url.searchParams.get('id')
   fetch(`https://frakle-bot.herokuapp.com/highscore/${score}?id=${playerId}`)
     .then((res) => console.log('Sent!:', res))
 }
