@@ -103,7 +103,7 @@ const PointCounter = (selectedDices, testForFrakle) => {
       const testArray = copySelectedDices.slice(offset, similarCount + offset)
       const numOfKindScore = checkNumOfKind(testArray, similarCount)
       if (numOfKindScore !== 0) {
-        copySelectedDices = Array.concat(
+        copySelectedDices = Array.prototype.concat(
           copySelectedDices.slice(0, offset),
           copySelectedDices.slice(similarCount + offset, copySelectedDices.lenght)
         )
@@ -116,7 +116,7 @@ const PointCounter = (selectedDices, testForFrakle) => {
       const straightScore = checkStraight(copySelectedDices.slice(offset, offset + 5))
       if (straightScore !== 0) {
         resScore += straightScore
-        copySelectedDices = Array.concat(
+        copySelectedDices = Array.prototype.concat(
           copySelectedDices.slice(0, offset),
           copySelectedDices.slice(5 + offset),
         )
