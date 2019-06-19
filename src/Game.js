@@ -26,6 +26,10 @@ const getSelectedDicesArray = (selectedDicesIndices, diceArray) => {
 
 const gameOverFunction = (score) => {
   alert(`Game over! Your score: ${score}`)
+  const url = new URL(location.href)
+  const playerId = url.selearchParams.get('id')
+  fetch(`https://frakle-bot.herokuapp.com/highscore/${score}?id=${playerId}`)
+    .then((res) => console.log('Sent!:', res))
 }
 
 const reducer = (state, action) => {
@@ -33,6 +37,7 @@ const reducer = (state, action) => {
   case 'finish_round':
     if (state.roundNumber + 1 >= 10) {
       gameOverFunction(state.points + state.roundPoints + state.throwPoints)
+      return { ...initialState }
     }
     return { ...state,
       isDiceRolling: false,
@@ -49,6 +54,7 @@ const reducer = (state, action) => {
     if (state.isFrackle) {
       if (state.roundNumber + 1 >= 10) {
         gameOverFunction(state.points)
+        return { ...initialState }
       }
       return { ...state,
         isDiceRolling: true,
@@ -68,11 +74,12 @@ const reducer = (state, action) => {
       const notSelectedCount = state.diceNumber - state.selectedDices.size
       const diceNumber = notSelectedCount <= 0 ? 6 : notSelectedCount
       const diceArray = _.range(diceNumber).map((num) => {
-          return Math.ceil(Math.random() * 6)
-        })
+        return Math.ceil(Math.random() * 6)
+      })
       if (PointCounter(diceArray, true) === 0) {
         if (state.roundNumber + 1 >= 10) {
           gameOverFunction(state.points)
+          return { ...initialState }
         }
         return { ...state,
           isDiceRolling: true,
@@ -97,11 +104,12 @@ const reducer = (state, action) => {
       }
     }
     const diceArray = _.range(state.diceNumber).map((num) => {
-        return Math.ceil(Math.random() * 6)
-      })
+      return Math.ceil(Math.random() * 6)
+    })
     if (PointCounter(diceArray, true) === 0) {
       if (state.roundNumber + 1 >= 10) {
         gameOverFunction(state.points)
+        return { ...initialState }
       }
       return { ...state,
         isDiceRolling: true,
@@ -132,6 +140,8 @@ const reducer = (state, action) => {
     }
   case 'stop_dice_roll':
     return { ...state, isDiceRolling: false }
+  case 'reset_game':
+    return { ...initialState }
   default:
     throw new Error(`Not supported action type: ${action.type}`)
   }
