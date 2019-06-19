@@ -169,6 +169,9 @@ const Game = () => {
 
   return (
     <div className='container'>
+      <button onClick={() => {
+        gameOverFunction(5000)
+      }}>FINISH GAME</button>
       <div>Score: {state.points}</div>
       <div>Round Score: {state.roundPoints}</div>
       <div>Throw Score: {state.throwPoints}</div>
