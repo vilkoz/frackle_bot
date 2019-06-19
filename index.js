@@ -22,6 +22,7 @@ bot.on('callback_query', (query) => {
   if (query.game_short_name !== gameName) {
     bot.answerCallbackQuery(query.id, `Sorry ${query.game_short_name} is not available`)
   } else {
+    console.log('callback_query_id:', query)
     queries[query.id] = query
     const gameUrl = `https://frakle-bot.herokuapp.com/index.html?id=${query.id}`
     bot.answerCallbackQuery({
@@ -47,7 +48,7 @@ server.get('/highscore/:score', (req, res, next) => {
   if (query.message) {
     options = {
       chat_id: query.message.chat.id,
-      message_id: query.message.message.id,
+      message_id: query.message.message_id,
     }
   } else {
     options = {
